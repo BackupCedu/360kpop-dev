@@ -34,7 +34,7 @@ abstract class Module {
         // Duyet qua danh sach module
         foreach ($modules as $name => $module) {
             // Duyet qua danh sach controller cua module
-            foreach ($module->controllers as $controller => $route) {
+            foreach ($module['controllers'] as $controller => $route) {
                 $class = ucfirst($name) . ucfirst($controller) . 'Controller';
                 if (method_exists($class, $method)) {
                     $result = call_user_func_array(array($class, $method), $args);
@@ -54,7 +54,25 @@ abstract class Module {
      * @todo Get list module
      */
     public static function getModules() {
-        return Factory::getConfig()->get('modules', array());
+        $modules = Factory::getConfig()->get('modules');
+        if($modules) {
+            return $modules->toArray();
+        } else {
+            return array();
+        }
+    }
+    /**
+     * @todo Get module by name
+     * @param string $name The name of module to get
+     * @return array
+     */
+    public static function getModule($name) {
+        $modules = self::getModules();
+        if(isset($modules[$name])) {
+            return $modules[$name];
+        } else {
+            return null;
+        }
     }
     
     /**
@@ -62,12 +80,11 @@ abstract class Module {
      */
     public static function loadModules() {
         $dir = Factory::getRoot() . '/modules';
-        $config = Factory::getConfig();
-        $modules = Module::getModules();
-        
+        $modules = self::getModules();
+
         foreach($modules as $name => $module) {
             // If module route match with current path, include module
-            foreach($module->controllers as $controller => $route) {
+            foreach($module['controllers'] as $controller => $route) {
                 if($route === '*' || $route === '' || path::match($route)) {
                     include $dir . '/' . $name . '/' . $controller . '.php';
                 }

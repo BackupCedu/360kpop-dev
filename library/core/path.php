@@ -16,10 +16,16 @@ class path {
         if ($pattern === NULL) {
             return $matches;
         }
-
+        /**
+         * Remove slash
+         * Convert %s to string
+         * Convert %d to number
+         * Convert * to all character
+         */
         $pattern = str_replace('/', '\/', $pattern);
         $pattern = str_replace('%s', '([a-zA-Z0-9\-\.]+)', $pattern);
         $pattern = str_replace('%d', '(\d+)', $pattern);
+        $pattern = str_replace('*', '(.*)', $pattern);
         $pattern = '/^' . $pattern . '$/iu';
 
         $path = path::route();

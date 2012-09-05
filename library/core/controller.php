@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @todo Controller Interface Class
+ */
 class Controller {
     protected $document;
     protected $registry;
@@ -67,7 +70,10 @@ class Controller {
 
 }
 
-class ControllerAction {
+/**
+ * @todo Action Controller Class
+ */
+class ActionController {
     /**
      * @var The module name match with current path
      */
@@ -103,7 +109,7 @@ class ControllerAction {
     /**
      * @todo Execute current router and return html
      */
-    public function run($data = null) {
+    public function execute($data = null) {
         $class  = ucfirst($this->_module) . ucfirst($this->_controller) . 'Controller';
         $method = $this->_action . 'Action';
         
@@ -170,7 +176,7 @@ class ControllerAction {
         $controller = new ControllerAction($router);
         
         // Return respond content by controller action
-        return $controller->run($param);
+        return $controller->execute($param);
     }
     public function error($message = '') {
         $error = array(
@@ -190,4 +196,65 @@ class ControllerAction {
         );            
         return $this->forward($denied, $message);        
     }
+}
+
+/**
+ * @todo Front Controller Class
+ */
+class FrontController {
+    
+    protected $registry;
+    protected $content = array();
+    protected $error;
+
+    public function __construct($registry) {
+        $this->registry = $registry;
+    }
+
+    public function addPreAction($pre_action) {
+        $this->pre_action[] = $pre_action;
+    }
+
+    public function dispatch($action, $error) {
+        $this->error = $error;
+
+        foreach ($this->pre_action as $pre_action) {
+            $result = $this->execute($pre_action);
+
+            if ($result) {
+                $action = $result;
+
+                break;
+            }
+        }
+
+        while ($action) {
+            $action = $this->execute($action);
+        }
+    }
+
+    private function execute($action) {
+        if (file_exists($action->getFile())) {
+            require_once($action->getFile());
+
+            $class = $action->getClass();
+
+            $controller = new $class($this->registry);
+
+            if (is_callable(array($controller, $action->getMethod()))) {
+                $action = call_user_func_array(array($controller, $action->getMethod()), $action->getArgs());
+            } else {
+                $action = $this->error;
+
+                $this->error = '';
+            }
+        } else {
+            $action = $this->error;
+
+            $this->error = '';
+        }
+
+        return $action;
+    }
+
 }
