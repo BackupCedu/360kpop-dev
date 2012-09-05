@@ -11,18 +11,18 @@ return array(
      */
     'login' => array(
         'module' => 'user',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'login',
     ),
     'logout' => array(
         'module' => 'user',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'logout',
     ),
     'user/(\d+)' => array(
         'type' => 'regex',
         'module' => 'user',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'detail',
         'map' => array(
             '1' => 'uid',
@@ -31,7 +31,7 @@ return array(
     'profile/(\w+)\.(\d+)' => array(
         'type' => 'regex',
         'module' => 'user',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'profile',
         'map' => array(
             '1' => 'alias',
@@ -54,13 +54,13 @@ return array(
      */
     'category/:cid' => array(
         'module' => 'content',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'cate',
     ),
     '([\w\-]+)\-c(\d+)' => array(
         'type' => 'regex',
         'module' => 'content',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'cate',
         'map' => array(
             '1' => 'alias',
@@ -69,13 +69,13 @@ return array(
     ),
     'node/:nid' => array(
         'module' => 'content',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'node',
     ),
     '[\w\-]+\-c(\d+)/([\w\-]+)\-n(\d+).html' => array(
         'type' => 'regex',
         'module' => 'content',
-        'controller' => 'index',
+        'controller' => 'front',
         'action' => 'node',
         'map' => array(
             '1' => 'cid',

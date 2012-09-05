@@ -8,25 +8,30 @@
  */
 
 /**
+ * front : content.module / front.module
+ * admin : admin.module / controller: admin / front
+ * content.module
+ * content.admin.module
  * $theme->setOptions();
- * $theme->getRegions();
- * 
+ * $theme->getRegions();s
+ ***********************
  */
-$path = isset($_GET['route']) ? $_GET['route'] : '';
-$path = trim(urldecode($path), '/');
 
-$dir = dirname(__FILE__);
+$module['route'];
 
 // Load framework core library
 include $dir . '/library/core/config.php';
 include $dir . '/library/core/registry.php';
 include $dir . '/library/core/factory.php';
-include $dir . '/library/core/common.php';
 include $dir . '/library/core/path.php';
+include $dir . '/library/core/common.php';
 include $dir . '/library/core/router.php';
 include $dir . '/library/core/database.php';
 include $dir . '/library/core/session.php';
 include $dir . '/library/core/controller.php';
+
+$dir = dirname(__FILE__);
+$path = path::route();
 
 // Set framework root directory
 Factory::getRoot($dir);
@@ -36,89 +41,32 @@ $config = Factory::getConfig();
 $router = Factory::getRouter();
 $registry = Factory::getRegistry();
 
-// Include all module match with current path
-Module::loadModules();
-// Call all module init hook
-Module::invoke('init');     //call::initEvent
-Module::invoke('route');    //call::routeEvent
-
 // Get route match with current path
 $routes = $config->get('routes', array());
 $router->addConfig($routes);
 
+Module::loadModules();
+Module::invoke('init');             //call::initEvent
+Module::invoke('route', &$router);   //call::routeEvent
+
+// Default router
 $defaultRouter = array(
-    'module'     => 'content',
-    'controller' => 'index',
-    'action'     => 'index',
+    'module'     => $config->get('module'),
+    'controller' => $config->get('controller'),
+    'action'     => $config->get('action'),
 );
 
+// Get current router
 $currentRouter = $router->route($path);
 $currentRouter = $currentRouter + $defaultRouter;
 
 $registry->set('router', $currentRouter);
 
-$runner = new ControllerAction($currentRouter);
+$controller = new ControllerAction($currentRouter);
+
+trace($controller->run());
 echo 'The router is :';
 trace($currentRouter);
-trace($runner->run());
-
-//trace($config);
-
-class ControllerAction {
-    protected $_config;
-    protected $_registry;
-    protected $_module;
-    protected $_controller;
-    protected $_action;
-    protected $_router;
-    public function __construct(&$router) {
-        $this->_router     = $router;
-        $this->_config     = Factory::getConfig();
-        $this->_registry   = Factory::getRegistry();
-        $this->_module     = isset($router['module']) ? $router['module'] : $this->_config->get('module');
-        $this->_controller = isset($router['controller']) ? $router['controller'] : $this->_config->get('controller');
-        $this->_action     = isset($router['action']) ? $router['action'] : $this->_config->get('action');
-    }
-
-    public function run() {
-        $class  = ucfirst($this->_module) . ucfirst($this->_controller) . 'Controller';
-        $method = $this->_action . 'Action';
-        
-        // check if controller method exists
-        if(method_exists($class, $method)) {
-            // params pass to function
-            $param = $this->_router;
-            // remove router variable
-            unset($param['module']);
-            unset($param['controller']);
-            unset($param['action']);
-            // call the function
-            $instance = new $class();
-            
-            if(method_exists($class, 'init')) {
-                call_user_func_array(array(&$instance, 'init'), $param);
-            }
-            $result = call_user_func_array(array(&$instance, $method), $param);
-            $result = call_user_func_array(array(&$instance, 'render'), $param);
-
-            return $result;
-
-        } else {
-            $error = array(
-                'module'     => 'error',
-                'controller' => '',
-                'action'     => 'error',
-                'router'     => $this->_router,
-            );            
-            return $this->forward($error);
-        }
-    }
-    
-    public function forward($router, $param = array()) {
-        $controller = new ControllerAction($router);
-        return $controller->run();
-    }
-}
 
 class Application {
 
@@ -212,9 +160,9 @@ class Application {
     
     public static function run() {
         // Run module, controller, action
-        $module = self::$_module;
+        $module     = self::$_module;
         $controller = self::$_controller;
-        $action = self::$_action;
+        $action     = self::$_action;
         
         $class = ucfirst($module) . 'Controller';
         $method = ucfirst($action) . 'Action';
@@ -241,24 +189,6 @@ class Application {
      */
     public static function loadConfig() {
         self::$_config->load(self::$_configDir . '/default.php');
-    }
-
-    /**
-     * @todo Load modules match with current path
-     */
-    public static function loadModules() {
-        $dir = Factory::getRoot() . '/modules';
-        $config = Factory::getConfig();
-        $modules = $config->get('modules', array());
-        
-        foreach($modules as $name => $module) {
-            // If module route match with current path, include module
-            foreach($module->controllers as $controller => $route) {
-                if($route === '*' || $route === '' || path::match($route)) {
-                    include $dir . '/' . $name . '/' . $controller . '.php';
-                }
-            }
-        }
     }
     
     /**

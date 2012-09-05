@@ -11,7 +11,7 @@ class path {
      *   $matches array
      */
     public static function match($pattern = NULL) {
-        $matches = array();
+        static $matches = array();
 
         if ($pattern === NULL) {
             return $matches;
@@ -62,32 +62,13 @@ class path {
      */
     public static function route() {
         if (isset($_GET['route'])) {
-            return trim($_GET['route'], '/');
+            return trim(urldecode($_GET['route']), '/');
         }
         return '';
     }
 
     /**
      * Return a component of the current Drupal path.
-     *
-     * When viewing a page at the path "admin/content/types", for example, arg(0)
-     * would return "admin", arg(1) would return "content", and arg(2) would return
-     * "types".
-     *
-     * Avoid use of this function where possible, as resulting code is hard to read.
-     * Instead, attempt to use named arguments in menu callback functions. See the
-     * explanation in menu.inc for how to construct callbacks that take arguments.
-     *
-     * @param $index
-     *   The index of the component, where each component is separated by a '/'
-     *   (forward-slash), and where the first component has an index of 0 (zero).
-     * @param $path
-     *   A path to break into components. Defaults to the path of the current page.
-     *
-     * @return
-     *   The component specified by $index, or NULL if the specified component was
-     *   not found. If called without arguments, it returns an array containing all
-     *   the components of the current path.
      */
     public static function arg($index = NULL, $path = NULL) {
         static $arguments = NULL;

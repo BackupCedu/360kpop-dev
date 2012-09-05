@@ -22,11 +22,11 @@ return array(
     /**
      * @var default module
      */
-    'module' => 'default',
+    'module' => 'content',
     /**
      * @var default controller
      */
-    'controller' => 'index',
+    'controller' => 'front',
     /**
      * @var default action
      */

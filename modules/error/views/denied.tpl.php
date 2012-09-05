@@ -10,3 +10,6 @@ echo $message;
 trace($router);
 
 ?>
+
+
+Denied module

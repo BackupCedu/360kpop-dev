@@ -77,6 +77,29 @@ abstract class Module {
 
 }
 
+class user {
+    /**
+     * @todo Check user perm
+     * @param $perm array or string
+     */
+    public static function access($perm) {
+        $roles = array();//Factory::getUser()->getRole();
+        
+        if(is_array($perm)) {
+            foreach($perm as $i => $p) {
+                if(!isset($roles[$p])) {
+                    return false;
+                }
+            }
+
+            return true;
+
+        } else {
+            return isset($roles[$perm]);
+        }
+    }
+}
+
 function trace($data) {
     echo '<pre>';
     print_r($data);
